@@ -34,13 +34,13 @@ int validateArguments(int argc, char **argv){//determine whether passed argument
         return NoArguments;
     }
     if (strlen(argv[1]) > MAX_SEARCH_INPUT) {//maximum input is MAX_SEARCH_INPUT characters
-        fprintf(stderr, "Ensure you input no more than %d digits\n", MAX_SEARCH_INPUT);        
+        fprintf(stderr, "Ensure you input no more than %d digits, error code: %d\n", MAX_SEARCH_INPUT, ExceededSearchLimit);        
         return ExceededSearchLimit;
     }
 
     for (int i = 0; argv[1][i] != '\0'; i++) {//remove the null termination and make sure there are only digits in the search field
         if (!isdigit(argv[1][i])) {
-        fprintf(stderr, "Make sure to only input digits\n");
+        fprintf(stderr, "Make sure to only input digits, error code: %d\n", InvalidArguments);
             return InvalidArguments;
         }
     }
@@ -170,16 +170,16 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
         searchNames(contacts, argv);
 
         /*PRINT OUT THE FOUND CONTACTS*/
-        bool ContactFound = false;
+        int ContactFound = NoContactsFound;
         for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
             if(contacts[g].valid == true){
                     printf("%s, %s\n", contacts[g].name, contacts[g].number);
-                    ContactFound = true;
+                    ContactFound = 0;
             }   
         }
 
         /*CHECK FOR NOT FOUND*/
-        if(!ContactFound){
+        if(ContactFound == NoContactsFound){
             for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
             if(contacts[g].valid != true){
                     printf("No contacts were found");
