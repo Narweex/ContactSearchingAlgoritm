@@ -79,7 +79,7 @@ int searchNumbers(Contact contact[], char* argv[]){//searches the phone numbers 
 int searchNames(Contact contact[], char* argv[]){//searches the first x characters from a name and validates the contact
     //SEARCHING FOR PEOPLES NAMES
     
-    char *keypads[10] = {"","","abc","def","ghi","jkl","mno","pqrs","tuv","wxyz"};//keypads for searching the substrings
+    char *keypads[10] = {"+","","abc","def","ghi","jkl","mno","pqrs","tuv","wxyz"};//keypads for searching the substrings
 
    //iterate trough all contacts
    for(int i = 0; i < MAX_AMOUNT_OF_CONTACTS; i++){
