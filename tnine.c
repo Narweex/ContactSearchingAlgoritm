@@ -170,10 +170,22 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
         searchNames(contacts, argv);
 
         /*PRINT OUT THE FOUND CONTACTS*/
+        bool ContactFound = false;
         for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
             if(contacts[g].valid == true){
                     printf("%s, %s\n", contacts[g].name, contacts[g].number);
-            }       
+                    ContactFound = true;
+            }   
+        }
+
+        /*CHECK FOR NOT FOUND*/
+        if(!ContactFound){
+            for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
+            if(contacts[g].valid != true){
+                    printf("No contacts were found");
+                    break;
+                }   
+            }
         }
     }
     
