@@ -12,7 +12,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
-#define MAX_SEARCH_INPUT 9 //maximum characters as an input
+#define MAX_SEARCH_INPUT 15 //maximum characters as an input
 #define MAX_AMOUNT_OF_CONTACTS 50 //maximum amount of contacts
 #define MAX_PHONE_LENGTH 15 //max length of a single phone number
 #define MAX_NAME_LENGTH 25 //maximum length of a person's name
@@ -76,43 +76,42 @@ int searchNumbers(Contact contact[], char* argv[]){//searches the phone numbers 
     return Success;
 }
 
-int searchNames(Contact contact[], char* argv[]){//searches the first x characters from a name and validates the contact
-    //SEARCHING FOR PEOPLES NAMES
+int searchNames(Contact contact[], char *argv[]) {//searches the names and marks contact as valid if it contains uninterrupted sequence
+   //define the keypads
+    char *keypads[10] = {"+", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
     
-    char *keypads[10] = {"+","","abc","def","ghi","jkl","mno","pqrs","tuv","wxyz"};//keypads for searching the substrings
-
-   //iterate trough all contacts
-   for(int i = 0; i < MAX_AMOUNT_OF_CONTACTS; i++){
+    
+    for (int i = 0; i < MAX_AMOUNT_OF_CONTACTS; i++) {// iterate through all contacts
         int numberLength = strlen(contact[i].number);
-        int keypadlength = strlen(argv[1]);
+        int nameLength = strlen(contact[i].name);
+        int searchLength = strlen(argv[1]);
 
-        // Check if the contact's number is empty else we won't even iterate
-        if (numberLength < 2) {
-            break; 
+        if (numberLength < 2 || searchLength == 0) {//check for empty number
+            continue;  
         }
+       
+        for (int j = 0; j <= nameLength - searchLength; j++) {// Iterate through each character in the contact's name
+            int match = 1; 
 
-        //iterate trough all the letters in a contact against a keypad
-
-//if all the matching characters fom a string will equal to length of the searched number, we will set the number as valid 
-         int match = 0;                                 
-               for (int k = 0; k < keypadlength; k++) {
-                
-                    // Ensure the character is a digit and within the keypad range
-                     if (isdigit(argv[1][k])) {
-                    int index = argv[1][k] - '0';
-                    
-                    //compare the substrings occasionally increment the match index
-                     if (strchr(keypads[index], tolower(contact[i].name[k])) != NULL) {
-                        match++;
-                     }
+            for (int k = 0; k < searchLength; k++) {// check if an uninterrupted substring exists
+                if (isdigit(argv[1][k])) {
+                    int index = argv[1][k] - '0';  // casting to integer
+                    if (strchr(keypads[index], tolower(contact[i].name[j + k])) == NULL) {// Check if the character in the contact's name is in the corresponding keypad set
+                        match = 0;  
+                        break;
+                    }
                 }
-            }    
-        
-        if(match == keypadlength){//if contact has exact matches with the searched numbers, make the struct instance as valid
-            contact[i].valid = true;
+            }
+
+           
+            if (match) {//if an uninterrupted match is found, mark the contact as valid
+                contact[i].valid = true;
+                break;  
+            }
         }
-   }
-    return Success;
+    }
+
+    return 0;  // Return success
 }
 
 int main(int argc, char **argv){//main function, creates structs, loads data into them, triggers search functions, prints out results
