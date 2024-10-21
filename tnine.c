@@ -12,12 +12,11 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 #define MAX_SEARCH_INPUT 15 //maximum characters as an input
 #define MAX_AMOUNT_OF_CONTACTS 50 //maximum amount of contacts
 #define MAX_PHONE_LENGTH 15 //max length of a single phone number
 #define MAX_NAME_LENGTH 25 //maximum length of a person's name
-
-
 
 enum errors{//program error codes and return values
     Success = 0,
@@ -25,6 +24,7 @@ enum errors{//program error codes and return values
     NoArguments = 101,
     ExceededSearchLimit = 102,
     NoContactsFound = 103,
+    NoFilePassed = 104,
 
 };
 
@@ -111,11 +111,15 @@ int searchNames(Contact contact[], char *argv[]) {//searches the names and marks
         }
     }
 
-    return 0;  // Return success
+    return Success;
 }
 
 int main(int argc, char **argv){//main function, creates structs, loads data into them, triggers search functions, prints out results
 
+    if(isatty(fileno(stdin))){
+        fprintf(stderr, "No file was passed to search in, error code %d", NoFilePassed);
+        return NoFilePassed;
+    }
     int argumentsResult = validateArguments(argc, argv);
     if(argumentsResult != Success && argumentsResult != NoArguments){//ensure all arguments are valid
        exit(InvalidArguments);
