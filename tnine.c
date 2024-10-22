@@ -13,7 +13,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
-#define MAX_SEARCH_INPUT 15 //maximum characters as an input
+#define MAX_SEARCH_INPUT 100 //maximum characters as an input
 #define MAX_AMOUNT_OF_CONTACTS 50 //maximum amount of contacts
 #define MAX_PHONE_LENGTH 15 //max length of a single phone number
 #define MAX_NAME_LENGTH 100 //maximum length of a person's name
@@ -32,6 +32,7 @@ enum errors{//program error codes and return values
 };
 
 int validateArguments(int argc, char **argv){//determine whether passed arguments are a valid array of integers
+   
     if(argc < 2){//ensure user submitted an input
         //printf("No input arguments, search results all apply to these filters\n");//warn the user that there are no arguments
         return NoArguments;
@@ -66,10 +67,10 @@ int searchNumbers(Contact contact[], char* argv[]){//searches the phone numbers 
         int numberLength = strlen(contact[i].number);
         int searchingLength = strlen(argv[1]);
         char buffer[MAX_SEARCH_INPUT];
-       
        for (int j = 0; j <= numberLength - searchingLength; j++) {//if there is a matching substring set the contact as valid
             strncpy(buffer, &contact[i].number[j], searchingLength);
             buffer[searchingLength] = '\0';//null termination
+            
 
             if(!strcmp(buffer, argv[1])){//if there's a match break of the loop and continue to the next contact
                 contact[i].valid = true;
