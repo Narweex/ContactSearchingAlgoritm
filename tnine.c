@@ -16,7 +16,7 @@
 #define MAX_SEARCH_INPUT 15 //maximum characters as an input
 #define MAX_AMOUNT_OF_CONTACTS 50 //maximum amount of contacts
 #define MAX_PHONE_LENGTH 15 //max length of a single phone number
-#define MAX_NAME_LENGTH 25 //maximum length of a person's name
+#define MAX_NAME_LENGTH 100 //maximum length of a person's name
 
 enum errors{//program error codes and return values
     Success = 0,
@@ -25,12 +25,15 @@ enum errors{//program error codes and return values
     ExceededSearchLimit = 102,
     NoContactsFound = 103,
     NoFilePassed = 104,
+    TooManyContacts = 105,
+    ContactTooLarge = 106,
+    TooManyArguments = 107,
 
 };
 
 int validateArguments(int argc, char **argv){//determine whether passed arguments are a valid array of integers
     if(argc < 2){//ensure user submitted an input
-        printf("No input arguments, search results all apply to these filters\n");//warn the user that there are no arguments
+        //printf("No input arguments, search results all apply to these filters\n");//warn the user that there are no arguments
         return NoArguments;
     }
     if (strlen(argv[1]) > MAX_SEARCH_INPUT) {//maximum input is MAX_SEARCH_INPUT characters
@@ -43,6 +46,10 @@ int validateArguments(int argc, char **argv){//determine whether passed argument
         fprintf(stderr, "Make sure to only input digits, error code: %d\n", InvalidArguments);
             return InvalidArguments;
         }
+    }
+     // Transform the first character if it is '0'
+    if (argv[1][0] == '0') {
+        argv[1][0] = '+';  // Transform '0' to '+'
     }
 
     return Success;
@@ -61,9 +68,7 @@ int searchNumbers(Contact contact[], char* argv[]){//searches the phone numbers 
         char buffer[MAX_SEARCH_INPUT];
        
        for (int j = 0; j <= numberLength - searchingLength; j++) {//if there is a matching substring set the contact as valid
-
             strncpy(buffer, &contact[i].number[j], searchingLength);
-
             buffer[searchingLength] = '\0';//null termination
 
             if(!strcmp(buffer, argv[1])){//if there's a match break of the loop and continue to the next contact
@@ -114,12 +119,26 @@ int searchNames(Contact contact[], char *argv[]) {//searches the names and marks
     return Success;
 }
 
-int main(int argc, char **argv){//main function, creates structs, loads data into them, triggers search functions, prints out results
-
-    if(isatty(fileno(stdin))){
-        fprintf(stderr, "No file was passed to search in, error code %d", NoFilePassed);
+int checkFileInput(){//check if file was passed as standard input
+    if(isatty(STDIN_FILENO)){
         return NoFilePassed;
     }
+    else {
+        return Success;
+    }
+}
+
+int main(int argc, char **argv){//main function, creates structs, loads data into them, triggers search functions, prints out results
+
+    if(argc > 2){
+        fprintf(stderr, "Too many arguments passed");
+        return TooManyArguments;
+    }
+    if(checkFileInput() != Success){
+        fprintf(stderr, "No file was passed to search in, error code %d", NoFilePassed);
+        exit(NoFilePassed);
+    }
+
     int argumentsResult = validateArguments(argc, argv);
     if(argumentsResult != Success && argumentsResult != NoArguments){//ensure all arguments are valid
        exit(InvalidArguments);
@@ -141,15 +160,20 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
     while(fgets(buffer, sizeof(buffer), stdin)){//open file
         buffer[strcspn(buffer, "\n")] = 0;
 
-        if(sizeof(buffer) > 121){//if contact name or number > 100 characters
-            return InvalidArguments;
+        if (strlen(buffer) > MAX_NAME_LENGTH) {
+            fprintf(stderr, "Exceeded maximum length of line, maximum %d characters allowed.\n", MAX_NAME_LENGTH);
+            exit(ContactTooLarge);  
+        }
+        if(i > MAX_AMOUNT_OF_CONTACTS){
+            fprintf(stderr, "Exceeded maximum amount of contacts, input max %d", MAX_AMOUNT_OF_CONTACTS);
+            return TooManyContacts; 
         }
 
         //load from file into a struct
         if(isalpha(buffer[0])){
             strcpy(contacts[i].name, buffer);   
         }
-        else if(isdigit(buffer[0])){
+        else if(isdigit(buffer[0]) || buffer[0] == '+'){
             strcpy(contacts[i].number, buffer);            
             i++;//increment -> move onto next struct
         }
@@ -157,10 +181,13 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
 
     if(argumentsResult == NoArguments){//case where there are no arguments entered
          for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
-            int numberLength = strlen(contacts[g].number);
+            int contactLength = strlen(contacts[g].name);
 
-            if(numberLength > 2){
-                printf("%s, %s\n", contacts[g].name, contacts[g].number);
+            if(contactLength > 2){
+                for(int j = 0; j < contactLength; j++){
+                printf("%c", tolower(contacts[g].name[j]));
+                }
+            printf(", %s\n", contacts[g].number);
             }
         }
     }
@@ -176,16 +203,21 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
         int ContactFound = NoContactsFound;
         for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
             if(contacts[g].valid == true){
-                    printf("%s, %s\n", contacts[g].name, contacts[g].number);
-                    ContactFound = 0;
-            }   
-        }
+            int contactLength = strlen(contacts[g].name);
+                for(int j = 0; j < contactLength; j++){
+                printf("%c", tolower(contacts[g].name[j]));
+                }
+            printf(", %s\n", contacts[g].number);
+        ContactFound = 0;
+    }   
+}
+
 
         /*CHECK FOR NOT FOUND*/
         if(ContactFound == NoContactsFound){
             for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
             if(contacts[g].valid != true){
-                    printf("No contacts were found");
+                    printf("Not found");
                     break;
                 }   
             }
