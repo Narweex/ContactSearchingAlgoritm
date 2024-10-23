@@ -31,12 +31,16 @@ enum errors{//program error codes and return values
 
 };
 
-int validateArguments(int argc, char **argv){//determine whether passed arguments are a valid array of integers
+int validateArguments(int argc, char **argv){//determine whether passed arguments are valid digits
    
-    if(argc < 2){//ensure user submitted an input
-        //printf("No input arguments, search results all apply to these filters\n");//warn the user that there are no arguments
+   if(argc > 2){//ensure not too many arguments are passed
+        fprintf(stderr, "Too many arguments passed");
+        return TooManyArguments;
+    }
+    else if(argc < 2){//ensure user submitted an input
         return NoArguments;
     }
+
     if (strlen(argv[1]) > MAX_SEARCH_INPUT) {//maximum input is MAX_SEARCH_INPUT characters
         fprintf(stderr, "Ensure you input no more than %d digits, error code: %d\n", MAX_SEARCH_INPUT, ExceededSearchLimit);        
         return ExceededSearchLimit;
@@ -61,6 +65,10 @@ int validateArguments(int argc, char **argv){//determine whether passed argument
         char number[MAX_PHONE_LENGTH];
         bool valid;
     }Contact;
+
+/*int initilizeContacts(Contact contacts[], ){
+
+}*/
 
 int searchNumbers(Contact contact[], char* argv[]){//searches the phone numbers for substrings and validates the passed structs
     for (int i = 0; i < MAX_AMOUNT_OF_CONTACTS; i++) {//iteration for each contact
@@ -129,23 +137,57 @@ int checkFileInput(){//check if file was passed as standard input
     }
 }
 
+int printAllContacts(Contact contact[]){//prints all the contacts whether they are valid or invalid
+    for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
+        int contactLength = strlen(contact[g].name);
+            if(contactLength > 2){
+                for(int j = 0; j < contactLength; j++){
+                printf("%c", tolower(contact[g].name[j]));
+                }
+            printf(", %s\n", contact[g].number);
+        }
+    }
+    return Success;
+}
+
+int printFoundContacts(Contact contact[]){//prints out all valid contacts and return if some were valid
+     int ContactFound = NoContactsFound;
+        for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
+            if(contact[g].valid == true){
+            int contactLength = strlen(contact[g].name);
+                for(int j = 0; j < contactLength; j++){
+                printf("%c", tolower(contact[g].name[j]));
+                }
+            printf(", %s\n", contact[g].number);
+            ContactFound = 0;
+            }
+        
+        }
+    return ContactFound;
+}
+
+int noSearchResults(int ContactFound){//check if all contacts were invalid and print out not found
+    if(ContactFound == NoContactsFound){
+            printf("Not found");
+    }
+    return Success;
+}
+
 int main(int argc, char **argv){//main function, creates structs, loads data into them, triggers search functions, prints out results
 
-    if(argc > 2){
-        fprintf(stderr, "Too many arguments passed");
-        return TooManyArguments;
-    }
+    /*CHECK IF A FILE WAS PASSED AS STDIN*/
     if(checkFileInput() != Success){
         fprintf(stderr, "No file was passed to search in, error code %d", NoFilePassed);
         exit(NoFilePassed);
     }
 
+    /*ENSURE ARGUMENTS ARE VALID DIGITS*/
     int argumentsResult = validateArguments(argc, argv);
-    if(argumentsResult != Success && argumentsResult != NoArguments){//ensure all arguments are valid
-       exit(InvalidArguments);
+    if(argumentsResult != Success && argumentsResult != NoArguments){
+       exit(argumentsResult);
     }
 
-    //initialize the structure for storing contacts
+    /*INITIALIZE THE STRUCTURE FOR STORING CONTACTS*/
     Contact contacts[MAX_AMOUNT_OF_CONTACTS];
 
     //buffer for storing the input
@@ -170,7 +212,7 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
             return TooManyContacts; 
         }
 
-        //load from file into a struct
+        //load from buffer into a struct
         if(isalpha(buffer[0])){
             strcpy(contacts[i].name, buffer);   
         }
@@ -181,16 +223,8 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
     }
 
     if(argumentsResult == NoArguments){//case where there are no arguments entered
-         for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
-            int contactLength = strlen(contacts[g].name);
-
-            if(contactLength > 2){
-                for(int j = 0; j < contactLength; j++){
-                printf("%c", tolower(contacts[g].name[j]));
-                }
-            printf(", %s\n", contacts[g].number);
-            }
-        }
+        printAllContacts(contacts);
+        return Success;
     }
     else{//in case arguments are found begin searching
 
@@ -201,30 +235,12 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
         searchNames(contacts, argv);
 
         /*PRINT OUT THE FOUND CONTACTS*/
-        int ContactFound = NoContactsFound;
-        for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
-            if(contacts[g].valid == true){
-            int contactLength = strlen(contacts[g].name);
-                for(int j = 0; j < contactLength; j++){
-                printf("%c", tolower(contacts[g].name[j]));
-                }
-            printf(", %s\n", contacts[g].number);
-        ContactFound = 0;
-    }   
-}
+        int ContactFound = printFoundContacts(contacts);
 
-
-        /*CHECK FOR NOT FOUND*/
-        if(ContactFound == NoContactsFound){
-            for(int g = 0; g < MAX_AMOUNT_OF_CONTACTS; g++){
-            if(contacts[g].valid != true){
-                    printf("Not found");
-                    break;
-                }   
-            }
-        }
+        /*CHECK FOR NOT FOUND CASE*/
+        noSearchResults(ContactFound);
     }
     
-    //end of the program
+    /*END OF THE PROGRAM*/
     return Success;
 }
