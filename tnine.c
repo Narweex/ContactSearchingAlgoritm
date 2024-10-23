@@ -66,9 +66,39 @@ int validateArguments(int argc, char **argv){//determine whether passed argument
         bool valid;
     }Contact;
 
-/*int initilizeContacts(Contact contacts[], ){
+int initializeContacts(Contact contacts[]){
+     for(int i = 0; i < MAX_AMOUNT_OF_CONTACTS; i++){//clear the memory used for storing the users data
+        strcpy(contacts[i].name, "0");
+        strcpy(contacts[i].number, "0");
+        contacts[i].valid = false;
+    }
+    //buffer for storing the input
+    char buffer[MAX_NAME_LENGTH];
 
-}*/
+    int i = 0;//while loop iteration to load the data
+    while(fgets(buffer, sizeof(buffer), stdin)){//open file
+        buffer[strcspn(buffer, "\n")] = 0;
+
+        if (strlen(buffer) > MAX_NAME_LENGTH) {
+            fprintf(stderr, "Exceeded maximum length of line, maximum %d characters allowed.\n", MAX_NAME_LENGTH);
+            exit(ContactTooLarge);  
+        }
+        if(i > MAX_AMOUNT_OF_CONTACTS){
+            fprintf(stderr, "Exceeded maximum amount of contacts, input max %d", MAX_AMOUNT_OF_CONTACTS);
+            return TooManyContacts; 
+        }
+
+        //load from buffer into a struct
+        if(isalpha(buffer[0])){
+            strcpy(contacts[i].name, buffer);   
+        }
+        else if(isdigit(buffer[0]) || buffer[0] == '+'){
+            strcpy(contacts[i].number, buffer);            
+            i++;//increment -> move onto next struct
+        }
+    }
+    return Success;
+}
 
 int searchNumbers(Contact contact[], char* argv[]){//searches the phone numbers for substrings and validates the passed structs
     for (int i = 0; i < MAX_AMOUNT_OF_CONTACTS; i++) {//iteration for each contact
@@ -190,37 +220,8 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
     /*INITIALIZE THE STRUCTURE FOR STORING CONTACTS*/
     Contact contacts[MAX_AMOUNT_OF_CONTACTS];
 
-    //buffer for storing the input
-    char buffer[MAX_NAME_LENGTH];
-
-    for(int i = 0; i < MAX_AMOUNT_OF_CONTACTS; i++){//clear the memory used for storing the users data
-        strcpy(contacts[i].name, "0");
-        strcpy(contacts[i].number, "0");
-        contacts[i].valid = false;
-    }
-
-    int i = 0;//while loop iteration to load the data
-    while(fgets(buffer, sizeof(buffer), stdin)){//open file
-        buffer[strcspn(buffer, "\n")] = 0;
-
-        if (strlen(buffer) > MAX_NAME_LENGTH) {
-            fprintf(stderr, "Exceeded maximum length of line, maximum %d characters allowed.\n", MAX_NAME_LENGTH);
-            exit(ContactTooLarge);  
-        }
-        if(i > MAX_AMOUNT_OF_CONTACTS){
-            fprintf(stderr, "Exceeded maximum amount of contacts, input max %d", MAX_AMOUNT_OF_CONTACTS);
-            return TooManyContacts; 
-        }
-
-        //load from buffer into a struct
-        if(isalpha(buffer[0])){
-            strcpy(contacts[i].name, buffer);   
-        }
-        else if(isdigit(buffer[0]) || buffer[0] == '+'){
-            strcpy(contacts[i].number, buffer);            
-            i++;//increment -> move onto next struct
-        }
-    }
+    /*LOAD ALL INFORMATION INTO STRUCTS*/
+    initializeContacts(contacts);
 
     if(argumentsResult == NoArguments){//case where there are no arguments entered
         printAllContacts(contacts);
@@ -237,7 +238,7 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
         /*PRINT OUT THE FOUND CONTACTS*/
         int ContactFound = printFoundContacts(contacts);
 
-        /*CHECK FOR NOT FOUND CASE*/
+        /*PRINT OUT NOTHING WAS FOUND*/
         noSearchResults(ContactFound);
     }
     
