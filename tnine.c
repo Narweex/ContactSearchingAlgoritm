@@ -13,10 +13,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
-#define MAX_SEARCH_INPUT 100 //maximum characters as an input
+#define MAX_SEARCH_INPUT 102 //maximum characters as an input
 #define MAX_AMOUNT_OF_CONTACTS 50 //maximum amount of contacts
-#define MAX_PHONE_LENGTH 15 //max length of a single phone number
-#define MAX_NAME_LENGTH 100 //maximum length of a person's name
+#define MAX_PHONE_LENGTH 102 //max length of a single phone number
+#define MAX_NAME_LENGTH 102 //maximum length of a person's name
 
 enum errors{//program error codes and return values
     Success = 0,
