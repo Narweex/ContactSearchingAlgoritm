@@ -241,7 +241,7 @@ int main(int argc, char **argv){//main function, creates structs, loads data int
         /*PRINT OUT NOTHING WAS FOUND*/
         noSearchResults(ContactFound);
     }
-    
+
     /*END OF THE PROGRAM*/
     return Success;
 }
